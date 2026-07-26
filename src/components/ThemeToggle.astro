@@ -1,18 +1,20 @@
 ---
-import { Icon } from 'astro-icon/components';
 ---
 <button
 	data-theme-toggle
 	type="button"
-	aria-label="Toggle color theme"
+	aria-label="Cambia tema"
 	class="inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none"
 >
-	<Icon name="tabler:sun" class="hidden size-5 dark:block" />
-	<Icon name="tabler:moon" class="block size-5 dark:hidden" />
+	<svg class="hidden size-5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+		<circle cx="12" cy="12" r="4" />
+		<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+	</svg>
+	<svg class="block size-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+		<path d="M21 14.5A8.5 8.5 0 1 1 12.5 3 7 7 0 0 0 21 14.5z" />
+	</svg>
 </button>
 <script is:inline>
-	// Delegate from document so the handler survives DOM swaps from
-	// Astro's ClientRouter and Tina's visual-editor re-renders.
 	if (!window.__themeToggleBound) {
 		window.__themeToggleBound = true;
 		document.addEventListener('click', (e) => {

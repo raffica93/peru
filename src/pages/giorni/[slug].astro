@@ -1,0 +1,71 @@
+---
+import Base from '../../layouts/Base.astro';
+import Prose from '../../components/Prose.astro';
+import { getConfig, getGiorno, listGiorni } from '../../lib/data';
+import { href } from '../../lib/paths';
+
+export async function getStaticPaths() {
+	const giorni = await listGiorni();
+	return giorni.map((g) => ({
+		params: { slug: g._sys.filename },
+	}));
+}
+
+const { slug } = Astro.params;
+const config = (await getConfig()).data?.config ?? null;
+const giorno = (await getGiorno(slug!)).data?.giorni;
+if (!giorno) return new Response('Not found', { status: 404 });
+
+const all = await listGiorni();
+const idx = all.findIndex((g) => g._sys.filename === slug);
+const prev = idx > 0 ? all[idx - 1] : null;
+const next = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
+
+const mapsUrl =
+	typeof giorno.lat === 'number' && typeof giorno.lng === 'number'
+		? `https://www.openstreetmap.org/?mlat=${giorno.lat}&mlon=${giorno.lng}#map=12/${giorno.lat}/${giorno.lng}`
+		: null;
+---
+
+<Base title={`${giorno.title} · ${config?.seo?.title ?? 'Perù'}`} description={giorno.focus || giorno.title}>
+	<article class="mx-auto max-w-3xl px-6 py-10">
+		<p class="text-sm font-medium text-primary">Giorno {giorno.day}</p>
+		<h1 class="mt-1 text-3xl font-bold tracking-tight md:text-4xl">{giorno.title}</h1>
+		<div class="mt-4 space-y-1 text-muted-foreground">
+			{giorno.date && (
+				<p>
+					<span class="font-medium text-foreground">Data:</span>{' '}
+					{new Date(giorno.date).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+				</p>
+			)}
+			{giorno.focus && <p><span class="font-medium text-foreground">Focus:</span> {giorno.focus}</p>}
+			{giorno.overnight && <p><span class="font-medium text-foreground">Pernottamento:</span> {giorno.overnight}</p>}
+			<p>
+				<span class="font-medium text-foreground">Luogo:</span> {giorno.placeName}
+				{giorno.placeAddress && <span class="text-muted-foreground"> · {giorno.placeAddress}</span>}
+			</p>
+			{mapsUrl && (
+				<p>
+					<a class="text-primary hover:underline" href={mapsUrl} target="_blank" rel="noopener noreferrer">
+						Apri su OpenStreetMap →
+					</a>
+				</p>
+			)}
+		</div>
+		{giorno.cover && (
+			<img src={giorno.cover} alt="" class="mt-8 aspect-[16/9] w-full rounded-2xl object-cover shadow-sm" />
+		)}
+		<div class="mt-8">
+			<Prose content={giorno.body} />
+		</div>
+		<nav class="mt-12 flex flex-wrap justify-between gap-4 border-t border-border pt-6 text-sm">
+			{prev ? (
+				<a href={href(`/giorni/${prev._sys.filename}`)} class="text-primary hover:underline">← Giorno {prev.day}</a>
+			) : <span />}
+			<a href={href('/giorni')} class="text-muted-foreground hover:text-foreground">Timeline</a>
+			{next ? (
+				<a href={href(`/giorni/${next._sys.filename}`)} class="text-primary hover:underline">Giorno {next.day} →</a>
+			) : <span />}
+		</nav>
+	</article>
+</Base>

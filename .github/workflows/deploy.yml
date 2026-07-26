@@ -1,0 +1,63 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build TinaCMS + Astro
+        env:
+          PUBLIC_TINA_CLIENT_ID: ${{ secrets.PUBLIC_TINA_CLIENT_ID }}
+          TINA_TOKEN: ${{ secrets.TINA_TOKEN }}
+          SITE_URL: https://raffica93.github.io
+          BASE_PATH: /peru/
+          TINA_PUBLIC_BASE_PATH: peru
+        run: |
+          if [ -n "$PUBLIC_TINA_CLIENT_ID" ] && [ -n "$TINA_TOKEN" ]; then
+            npx tinacms build -c "astro build"
+          else
+            echo "Tina Cloud secrets missing — building in local/offline mode"
+            npx tinacms build --local --skip-cloud-checks -c "astro build"
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Astro static pages land in dist/client when the Node adapter is present
+          path: dist/client
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

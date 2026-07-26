@@ -1,0 +1,54 @@
+---
+import Base from '../../layouts/Base.astro';
+import Prose from '../../components/Prose.astro';
+import { getConfig, getTappa, listTappe } from '../../lib/data';
+import { href } from '../../lib/paths';
+
+export async function getStaticPaths() {
+	const tappe = await listTappe();
+	return tappe.map((t) => ({
+		params: { slug: t._sys.filename },
+	}));
+}
+
+const { slug } = Astro.params;
+const config = (await getConfig()).data?.config ?? null;
+const tappa = (await getTappa(slug!)).data?.tappe;
+if (!tappa) return new Response('Not found', { status: 404 });
+
+const all = await listTappe();
+const idx = all.findIndex((t) => t._sys.filename === slug);
+const prev = idx > 0 ? all[idx - 1] : null;
+const next = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
+---
+
+<Base title={`${tappa.title} · ${config?.seo?.title ?? 'Perù'}`} description={tappa.route || tappa.period || tappa.title}>
+	<article class="mx-auto max-w-3xl px-6 py-10">
+		<p class="text-sm font-medium text-primary">Tappa {tappa.order}</p>
+		<h1 class="mt-1 text-3xl font-bold tracking-tight md:text-4xl">{tappa.title}</h1>
+		{(tappa.period || tappa.route) && (
+			<div class="mt-4 space-y-1 text-muted-foreground">
+				{tappa.period && <p><span class="font-medium text-foreground">Periodo:</span> {tappa.period}</p>}
+				{tappa.route && <p><span class="font-medium text-foreground">Percorso:</span> {tappa.route}</p>}
+				{tappa.candidateHotel && (
+					<p><span class="font-medium text-foreground">Alloggio candidato:</span> {tappa.candidateHotel}</p>
+				)}
+			</div>
+		)}
+		{tappa.cover && (
+			<img src={tappa.cover} alt="" class="mt-8 aspect-[16/9] w-full rounded-2xl object-cover shadow-sm" />
+		)}
+		<div class="mt-8">
+			<Prose content={tappa.body} />
+		</div>
+		<nav class="mt-12 flex flex-wrap justify-between gap-4 border-t border-border pt-6 text-sm">
+			{prev ? (
+				<a href={href(`/tappe/${prev._sys.filename}`)} class="text-primary hover:underline">← {prev.title}</a>
+			) : <span />}
+			<a href={href('/tappe')} class="text-muted-foreground hover:text-foreground">Tutte le tappe</a>
+			{next ? (
+				<a href={href(`/tappe/${next._sys.filename}`)} class="text-primary hover:underline">{next.title} →</a>
+			) : <span />}
+		</nav>
+	</article>
+</Base>

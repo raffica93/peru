@@ -1,0 +1,55 @@
+---
+import Base from '../layouts/Base.astro';
+import ItineraryMap from '../components/ItineraryMap.astro';
+import { getConfig, listGiorni } from '../lib/data';
+import { href } from '../lib/paths';
+
+const config = (await getConfig()).data?.config ?? null;
+const giorni = await listGiorni();
+const markers = giorni
+	.filter((g) => typeof g.lat === 'number' && typeof g.lng === 'number')
+	.map((g) => ({
+		day: g.day ?? 0,
+		title: g.title,
+		focus: g.focus,
+		overnight: g.overnight,
+		placeName: g.placeName,
+		lat: g.lat as number,
+		lng: g.lng as number,
+		href: href(`/giorni/${g._sys.filename}`),
+	}));
+---
+
+<Base
+	title={`Mappa · ${config?.seo?.title ?? 'Perù 2026'}`}
+	description="Mappa interattiva di tappe e giorni del viaggio in Perù"
+>
+	<section class="mx-auto max-w-6xl px-6 py-10">
+		<p class="text-sm font-medium text-primary">Itinerario</p>
+		<h1 class="mt-1 text-3xl font-bold tracking-tight">Mappa interattiva</h1>
+		<p class="mt-2 max-w-2xl text-muted-foreground">
+			Ogni marker è un giorno. La linea collega la sequenza operativa da Roma a Lima e ritorno.
+		</p>
+		<div class="mt-6">
+			<ItineraryMap markers={markers} height="min(75vh, 640px)" />
+		</div>
+		<ol class="mt-8 grid gap-2 sm:grid-cols-2">
+			{giorni.map((g) => (
+				<li>
+					<a
+						href={href(`/giorni/${g._sys.filename}`)}
+						class="flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm transition hover:border-primary/40"
+					>
+						<span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+							{g.day}
+						</span>
+						<span>
+							<span class="font-medium">{g.placeName}</span>
+							<span class="mt-0.5 block text-muted-foreground">{g.focus}</span>
+						</span>
+					</a>
+				</li>
+			))}
+		</ol>
+	</section>
+</Base>

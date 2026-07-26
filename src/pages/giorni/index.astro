@@ -1,0 +1,37 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getConfig, listGiorni } from '../../lib/data';
+import { href } from '../../lib/paths';
+
+const config = (await getConfig()).data?.config ?? null;
+const giorni = await listGiorni();
+---
+
+<Base title={`Giorni · ${config?.seo?.title ?? 'Perù 2026'}`} description="Itinerario giorno per giorno">
+	<section class="mx-auto max-w-3xl px-6 py-10">
+		<h1 class="text-3xl font-bold tracking-tight">Giorno per giorno</h1>
+		<p class="mt-2 text-muted-foreground">11–27 settembre 2026 · timeline operativa completa.</p>
+		<ol class="relative mt-10 space-y-0 border-l border-border ml-3">
+			{giorni.map((g) => (
+				<li class="relative pb-8 pl-8 last:pb-0">
+					<span class="absolute -left-2.5 top-1 flex size-5 items-center justify-center rounded-full border border-primary bg-background text-[10px] font-semibold text-primary">
+						{g.day}
+					</span>
+					<a href={href(`/giorni/${g._sys.filename}`)} class="group block rounded-xl border border-border bg-card p-4 transition hover:border-primary/40">
+						<div class="flex flex-wrap items-baseline justify-between gap-2">
+							<h2 class="font-semibold group-hover:text-primary">{g.title}</h2>
+							<span class="text-xs text-muted-foreground">
+								{g.date ? new Date(g.date).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }) : ''}
+							</span>
+						</div>
+						{g.focus && <p class="mt-1 text-sm text-muted-foreground">{g.focus}</p>}
+						<p class="mt-2 text-xs text-muted-foreground">
+							{g.placeName}
+							{g.overnight && <> · Pernottamento: {g.overnight}</>}
+						</p>
+					</a>
+				</li>
+			))}
+		</ol>
+	</section>
+</Base>

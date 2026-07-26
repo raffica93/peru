@@ -43,6 +43,7 @@ async function getAdapter() {
 // canonicals. Local builds fall back to localhost.
 function getSiteUrl() {
 	if (process.env.SITE_URL) return process.env.SITE_URL;
+	if (process.env.GITHUB_ACTIONS) return 'https://raffica93.github.io';
 	if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
 	if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
 	if (process.env.CF_PAGES_URL) return process.env.CF_PAGES_URL;
@@ -51,12 +52,16 @@ function getSiteUrl() {
 	return 'http://localhost:4321';
 }
 
+// Project site on GitHub Pages: https://raffica93.github.io/peru/
+// Override with SITE_URL / BASE_PATH env vars when needed.
+const basePath = process.env.BASE_PATH ?? (process.env.GITHUB_ACTIONS ? '/peru/' : '/');
+
 // https://astro.build/config
 export default defineConfig({
 	site: getSiteUrl(),
+	base: basePath,
 	output: 'static',
 	adapter: await getAdapter(),
-	redirects: { '/home': '/' },
 	integrations: [mdx(), sitemap(), icon(), tina()],
 	build: {
 		// Inline the (~10 KiB) bundled CSS into a <style> in <head> instead of a

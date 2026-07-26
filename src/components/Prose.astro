@@ -1,0 +1,16 @@
+---
+import TinaMarkdown from '@tinacms/astro/TinaMarkdown.astro';
+import type { RichText } from '../lib/data';
+
+interface Props {
+	content?: RichText | null;
+}
+
+const { content } = Astro.props;
+---
+
+{content && (
+	<div class="prose prose-neutral dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-a:text-primary">
+		<TinaMarkdown content={content} />
+	</div>
+)}

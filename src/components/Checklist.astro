@@ -1,0 +1,43 @@
+---
+interface Item {
+	label?: string | null;
+	done?: boolean | null;
+}
+
+interface Props {
+	title: string;
+	items?: (Item | null)[] | null;
+}
+
+const { title, items } = Astro.props;
+const list = (items ?? []).filter((i): i is Item => Boolean(i?.label));
+if (!list.length) return;
+const doneCount = list.filter((i) => i.done).length;
+---
+
+<section class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+	<div class="mb-3 flex items-baseline justify-between gap-3">
+		<h3 class="text-base font-semibold text-foreground">{title}</h3>
+		<span class="text-xs text-muted-foreground">{doneCount}/{list.length}</span>
+	</div>
+	<ul class="space-y-2">
+		{list.map((item) => (
+			<li class="flex items-start gap-2 text-sm">
+				<span
+					class:list={[
+						"mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded border text-[10px]",
+						item.done
+							? "border-primary bg-primary text-primary-foreground"
+							: "border-border bg-background text-transparent",
+					]}
+					aria-hidden="true"
+				>
+					✓
+				</span>
+				<span class:list={[item.done && "text-muted-foreground line-through"]}>
+					{item.label}
+				</span>
+			</li>
+		))}
+	</ul>
+</section>

@@ -1,0 +1,31 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getConfig, listTappe } from '../../lib/data';
+import { href } from '../../lib/paths';
+
+const config = (await getConfig()).data?.config ?? null;
+const tappe = await listTappe();
+---
+
+<Base title={`Tappe · ${config?.seo?.title ?? 'Perù 2026'}`} description="Le 9 tappe del viaggio in Perù">
+	<section class="mx-auto max-w-6xl px-6 py-10">
+		<h1 class="text-3xl font-bold tracking-tight">Tappe</h1>
+		<p class="mt-2 text-muted-foreground">Nove tappe da Lima a Rainbow Mountain, con programma e logistica.</p>
+		<div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+			{tappe.map((t) => (
+				<a
+					href={href(`/tappe/${t._sys.filename}`)}
+					class="group rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/40 hover:shadow-md"
+				>
+					{t.cover && (
+						<img src={t.cover} alt="" class="mb-4 aspect-[16/10] w-full rounded-xl object-cover" />
+					)}
+					<p class="text-xs font-medium tracking-wide text-primary uppercase">Tappa {t.order}</p>
+					<h2 class="mt-1 text-lg font-semibold group-hover:text-primary">{t.title}</h2>
+					{t.period && <p class="mt-2 text-sm text-muted-foreground">{t.period}</p>}
+					{t.route && <p class="mt-1 text-sm text-muted-foreground">{t.route}</p>}
+				</a>
+			))}
+		</div>
+	</section>
+</Base>

@@ -17,15 +17,17 @@ const config = (await getConfig()).data?.config ?? null;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="it">
 	<head>
 		<BaseHead title={title} description={description} image={image} />
 	</head>
-	<body>
+	<body class="min-h-screen bg-background text-foreground">
 		<TinaIsland name="global" wrapper={islands.global.wrapper}>
 			<Header config={config} />
 		</TinaIsland>
-		<slot />
+		<main class="pt-20">
+			<slot />
+		</main>
 		<TinaIsland name="global-footer" wrapper={islands['global-footer'].wrapper}>
 			<Footer config={config} />
 		</TinaIsland>
