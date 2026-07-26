@@ -38,10 +38,13 @@ jobs:
           BASE_PATH: /peru/
           TINA_PUBLIC_BASE_PATH: peru
         run: |
+          # --content=local: build pages from repo Markdown (fast, correct for GH Pages)
+          # --skip-cloud-checks: don't fail if TinaCloud schema reindex is still catching up
+          # With CLIENT_ID + TOKEN, the generated admin still talks to TinaCloud for edits.
           if [ -n "$PUBLIC_TINA_CLIENT_ID" ] && [ -n "$TINA_TOKEN" ]; then
-            npx tinacms build -c "astro build"
+            npx tinacms build --content=local --skip-cloud-checks -c "astro build"
           else
-            echo "Tina Cloud secrets missing — building in local/offline mode"
+            echo "Tina Cloud secrets missing — building fully offline"
             npx tinacms build --local --skip-cloud-checks -c "astro build"
           fi
 
